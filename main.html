@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fornecedores da Congregação</title>
+
+    <meta
+        name="description"
+        content="Lista de fornecedores cadastrados e autorizados para comprar pela congregação."
+    >
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --whatsapp: #25d366;
+            --whatsapp-dark: #1ebe5d;
+            --maps: #ea4335;
+            --background: #f5f7fa;
+            --card: #ffffff;
+            --text: #1f2937;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+        }
+
+        body.dark-mode {
+            --background: #111827;
+            --card: #1f2937;
+            --text: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border: #374151;
+            --shadow: 0 8px 25px rgba(0, 0, 0, 0.30);
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* =========================
+           CABEÇALHO
+        ========================== */
+
+        header {
+            background: linear-gradient(
+                135deg,
+                var(--primary),
+                var(--primary-dark)
+            );
+
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            width: 75px;
+            height: 75px;
+            margin: 0 auto 20px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+
+            font-size: 36px;
+        }
+
+        header h1 {
+            font-size: 34px;
+            margin-bottom: 12px;
+        }
+
+        header p {
+            font-size: 17px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           CONTAINER
+        ========================== */
+
+        main {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 35px 20px 60px;
+        }
+
+        /* =========================
+           PESQUISA
+        ========================== */
+
+        .search-container {
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            height: 58px;
+
+            padding: 0 20px 0 52px;
+
+            border: 1px solid var(--border);
+            border-radius: 14px;
+
+            background: var(--card);
+
+            font-size: 16px;
+            color: var(--text);
+
+            outline: none;
+
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+
+            transition: 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            font-size: 21px;
+            color: var(--text-secondary);
+        }
+
+        /* =========================
+           TÍTULO DA LISTA
+        ========================== */
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+        .list-header h2 {
+            font-size: 22px;
+        }
+
+        #total-fornecedores {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* =========================
+           GRID
+        ========================== */
+
+        .fornecedores-grid {
+            display: grid;
+
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(280px, 1fr)
+            );
+
+            gap: 20px;
+        }
+
+        /* =========================
+           CARD
+        ========================== */
+
+        .fornecedor-card {
+            background: var(--card);
+
+            border: 1px solid var(--border);
+
+            border-radius: 18px;
+
+            padding: 24px;
+
+            box-shadow: var(--shadow);
+
+            transition:
+                transform 0.2s,
+                box-shadow 0.2s;
+        }
+
+        .fornecedor-card:hover {
+            transform: translateY(-4px);
+
+            box-shadow:
+                0 15px 35px rgba(0, 0, 0, 0.10);
+        }
+
+        .fornecedor-nome {
+            font-size: 20px;
+            font-weight: 700;
+
+            margin-bottom: 20px;
+        }
+
+        .informacao {
+            display: flex;
+            align-items: flex-start;
+
+            gap: 12px;
+
+            margin-bottom: 15px;
+
+            color: var(--text-secondary);
+
+            line-height: 1.5;
+        }
+
+        .informacao .icone {
+            flex-shrink: 0;
+
+            width: 30px;
+            height: 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 8px;
+
+            background: var(--border);
+
+            font-size: 16px;
+        }
+
+        .informacao a {
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .informacao a:hover {
+            text-decoration: underline;
+        }
+
+        /* =========================
+           BOTÕES
+        ========================== */
+
+        .acoes {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+
+            margin-top: 22px;
+        }
+
+        .botao {
+            min-height: 46px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 7px;
+
+            border-radius: 10px;
+
+            color: white;
+
+            text-decoration: none;
+
+            font-size: 14px;
+            font-weight: 700;
+
+            transition: 0.2s;
+        }
+
+        .botao-whatsapp {
+            background: var(--whatsapp);
+        }
+
+        .botao-whatsapp:hover {
+            background: var(--whatsapp-dark);
+        }
+
+        .botao-maps {
+            background: var(--maps);
+        }
+
+        .botao-maps:hover {
+            background: #d93025;
+        }
+
+        /* =========================
+           SEM RESULTADOS
+        ========================== */
+
+        .sem-resultados {
+            display: none;
+
+            text-align: center;
+
+            background: var(--card);
+
+            border-radius: 16px;
+
+            padding: 50px 20px;
+
+            color: var(--text-secondary);
+        }
+
+        .sem-resultados .icone {
+            font-size: 45px;
+            margin-bottom: 15px;
+        }
+
+        .sem-resultados h3 {
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        /* =========================
+           RODAPÉ
+        ========================== */
+
+        footer {
+            text-align: center;
+
+            padding: 25px 20px;
+
+            color: var(--text-secondary);
+
+            font-size: 14px;
+        }
+
+        /* =========================
+           MODO ESCURO
+        ========================== */
+
+        .botao-dark {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 48px;
+            height: 48px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.20);
+            color: white;
+            cursor: pointer;
+            font-size: 21px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            backdrop-filter: blur(6px);
+        }
+
+        .botao-dark:hover {
+            transform: scale(1.08);
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        @media (max-width: 767px) {
+            .botao-dark {
+                top: 12px;
+                right: 12px;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* =========================
+           RESPONSIVIDADE
+        ========================== */
+
+        @media (max-width: 767px) {
+
+            header {
+                padding: 40px 20px;
+            }
+
+            header h1 {
+                font-size: 27px;
+            }
+
+            header p {
+                font-size: 15px;
+            }
+
+            main {
+                padding: 25px 15px 45px;
+            }
+
+            .fornecedores-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .fornecedor-card {
+                padding: 20px;
+            }
+
+            .acoes {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+
+            .fornecedores-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button
+        id="botao-dark"
+        class="botao-dark"
+        type="button"
+        aria-label="Ativar modo escuro"
+        title="Ativar modo escuro"
+    >🌙</button>
+
+    <!-- =========================
+         CABEÇALHO
+    ========================== -->
+
+    <header>
+
+        <div class="header-content">
+
+            <div class="logo">
+                🏢
+            </div>
+
+            <h1>
+                Fornecedores da Congregação Cristã no Brasil
+            </h1>
+
+            <p>
+                Administração de São Vicente
+            </p>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         CONTEÚDO
+    ========================== -->
+
+    <main>
+
+        <!-- PESQUISA -->
+
+        <section class="search-container">
+
+            <div class="search-box">
+
+                <span class="search-icon">
+                    🔍
+                </span>
+
+                <input
+                    type="search"
+                    id="campo-pesquisa"
+                    placeholder="Pesquisar fornecedor..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+        </section>
+
+
+        <!-- LISTA -->
+
+        <div class="list-header">
+
+            <h2>
+                Fornecedores
+            </h2>
+
+            <span id="total-fornecedores">
+                0 fornecedores
+            </span>
+
+        </div>
+
+
+        <!-- CARDS -->
+
+        <section
+            id="lista-fornecedores"
+            class="fornecedores-grid"
+        >
+        </section>
+
+
+        <!-- SEM RESULTADOS -->
+
+        <div
+            id="sem-resultados"
+            class="sem-resultados"
+        >
+
+            <div class="icone">
+                🔎
+            </div>
+
+            <h3>
+                Nenhum fornecedor encontrado
+            </h3>
+
+            <p>
+                Tente pesquisar por outro nome ou endereço.
+            </p>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================
+         RODAPÉ
+    ========================== -->
+
+    <footer>
+
+        © 2026 - Fornecedores da Congregação
+
+    </footer>
+
+
+    <script>
+
+        /*
+        ==========================================
+        DADOS DOS FORNECEDORES
+        ==========================================
+
+        Para adicionar um fornecedor, basta copiar
+        um dos objetos abaixo e alterar os dados.
+
+        O telefone deve conter apenas números,
+        incluindo o código do país.
+
+        Exemplo:
+
+        Brasil +55
+        São Paulo (11)
+        Número 99999-9999
+
+        Resultado:
+
+        5511999999999
+        */
+
+        const fornecedores = [
+
+            {
+                nome: "Bazar da Construção",
+                telefone: "13982035908",
+                telefoneFormatado: "(13) 98203-5908",
+                endereco: "Av. Dom Pedro II, 1073 - Conj. Res. Tancredo Neves, São Vicente"
+            },
+
+            {
+                nome: "Correia Materiais",
+                telefone: "13974152919",
+                telefoneFormatado: "(13) 97415-2919",
+                endereco: "Avenida Principal, 500 - São Paulo - SP"
+            },
+
+            {
+                nome: "Bela Tintas",
+                telefone: "5513974166404",
+                telefoneFormatado: "(11) 97777-7777",
+                endereco: "Av. Antônio Emmerich, 819 - Vila Cascatinha, São Vicente - SP"
+            },
+
+            {
+                nome: "Adriex",
+                telefone: "5513974104504",
+                telefoneFormatado: "(13) 97410-4504",
+                endereco: "Av. Antônio Emmerich, 819 - Vila Cascatinha, São Vicente - SP"
+            },
+
+            {
+                nome: "Andra Materiais Eletricos",
+                telefone: "5513997360060",
+                telefoneFormatado: "(13) 99736-0060",
+                endereco: "Av. Senador Feijó, 414 - Vila Mathias, Santos - SP"
+            }
+
+        ];
+
+
+        /*
+        ==========================================
+        ELEMENTOS
+        ==========================================
+        */
+
+        const listaFornecedores =
+            document.getElementById(
+                "lista-fornecedores"
+            );
+
+        const campoPesquisa =
+            document.getElementById(
+                "campo-pesquisa"
+            );
+
+        const totalFornecedores =
+            document.getElementById(
+                "total-fornecedores"
+            );
+
+        const semResultados =
+            document.getElementById(
+                "sem-resultados"
+            );
+
+
+        /*
+        ==========================================
+        CRIAR LINK DO WHATSAPP
+        ==========================================
+        */
+
+        function criarLinkWhatsApp(telefone) {
+
+            const mensagem =
+                "Olá! Gostaria de fazer um orçamento.";
+
+            return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+
+        }
+
+
+        /*
+        ==========================================
+        CRIAR LINK DO GOOGLE MAPS
+        ==========================================
+        */
+
+        function criarLinkMaps(endereco) {
+
+            return (
+                "https://www.google.com/maps/search/?api=1&query=" +
+                encodeURIComponent(endereco)
+            );
+
+        }
+
+
+        /*
+        ==========================================
+        EXIBIR FORNECEDORES
+        ==========================================
+        */
+
+        function exibirFornecedores(lista) {
+
+            listaFornecedores.innerHTML = "";
+
+            totalFornecedores.textContent =
+                `${lista.length} fornecedor${lista.length !== 1 ? "es" : ""}`;
+
+
+            if (lista.length === 0) {
+
+                semResultados.style.display = "block";
+
+                return;
+
+            }
+
+
+            semResultados.style.display = "none";
+
+
+            lista.forEach(fornecedor => {
+
+                const card =
+                    document.createElement("article");
+
+                card.className =
+                    "fornecedor-card";
+
+
+                const linkWhatsApp =
+                    criarLinkWhatsApp(
+                        fornecedor.telefone
+                    );
+
+
+                const linkMaps =
+                    criarLinkMaps(
+                        fornecedor.endereco
+                    );
+
+
+                card.innerHTML = `
+
+                    <h3 class="fornecedor-nome">
+                        ${fornecedor.nome}
+                    </h3>
+
+
+                    <div class="informacao">
+
+                        <span class="icone">
+                            📞
+                        </span>
+
+                        <a
+                            href="${linkWhatsApp}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            ${fornecedor.telefoneFormatado}
+                        </a>
+
+                    </div>
+
+
+                    <div class="informacao">
+
+                        <span class="icone">
+                            📍
+                        </span>
+
+                        <a
+                            href="${linkMaps}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            ${fornecedor.endereco}
+                        </a>
+
+                    </div>
+
+
+                    <div class="acoes">
+
+                        <a
+                            href="${linkWhatsApp}"
+                            class="botao botao-whatsapp"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            💬 WhatsApp
+                        </a>
+
+
+                        <a
+                            href="${linkMaps}"
+                            class="botao botao-maps"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            📍 Ver no Maps
+                        </a>
+
+                    </div>
+
+                `;
+
+
+                listaFornecedores.appendChild(card);
+
+            });
+
+        }
+
+
+        /*
+        ==========================================
+        PESQUISA
+        ==========================================
+        */
+
+        campoPesquisa.addEventListener(
+            "input",
+            function () {
+
+                const termo =
+                    this.value
+                        .toLowerCase()
+                        .trim();
+
+
+                const resultados =
+                    fornecedores.filter(
+                        fornecedor => {
+
+                            return (
+                                fornecedor.nome
+                                    .toLowerCase()
+                                    .includes(termo)
+
+                                ||
+
+                                fornecedor.endereco
+                                    .toLowerCase()
+                                    .includes(termo)
+
+                                ||
+
+                                fornecedor.telefoneFormatado
+                                    .toLowerCase()
+                                    .includes(termo)
+                            );
+
+                        }
+                    );
+
+
+                exibirFornecedores(resultados);
+
+            }
+        );
+
+
+        /*
+        ==========================================
+        MODO ESCURO
+        ==========================================
+        */
+
+        const botaoDark = document.getElementById("botao-dark");
+
+        const modoDarkSalvo = localStorage.getItem("modoDark") === "true";
+
+        if (modoDarkSalvo) {
+            document.body.classList.add("dark-mode");
+            botaoDark.textContent = "☀️";
+            botaoDark.setAttribute("aria-label", "Desativar modo escuro");
+            botaoDark.setAttribute("title", "Desativar modo escuro");
+        }
+
+        botaoDark.addEventListener("click", function () {
+            const ativo = document.body.classList.toggle("dark-mode");
+
+            localStorage.setItem("modoDark", ativo);
+
+            this.textContent = ativo ? "☀️" : "🌙";
+            this.setAttribute(
+                "aria-label",
+                ativo ? "Desativar modo escuro" : "Ativar modo escuro"
+            );
+            this.setAttribute(
+                "title",
+                ativo ? "Desativar modo escuro" : "Ativar modo escuro"
+            );
+        });
+
+
+        /*
+        ==========================================
+        INICIALIZAÇÃO
+        ==========================================
+        */
+
+        exibirFornecedores(fornecedores);
+
+    </script>
+
+</body>
+</html>
