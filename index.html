@@ -9,6 +9,9 @@
         name="description"
         content="Lista de fornecedores cadastrados e autorizados para comprar pela congregação."
     >
+    <meta name="theme-color" content="#d4d9e2">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
     <style>
         * {
             margin: 0;
@@ -19,8 +22,8 @@
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
-            --whatsapp: #25d366;
-            --whatsapp-dark: #1ebe5d;
+            --whatsapp: #07ba4a;
+            --whatsapp-dark: #069a3e;
             --maps: #ea4335;
             --background: #f5f7fa;
             --card: #ffffff;
@@ -101,6 +104,9 @@
 
         .search-container {
             margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 240px;
+            gap: 12px;
         }
 
         .search-box {
@@ -126,6 +132,23 @@
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
 
             transition: 0.2s;
+        }
+
+        #filtro-cidade {
+            width: 100%;
+            height: 58px;
+            padding: 0 16px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--card);
+            color: var(--text);
+            font-size: 16px;
+            outline: none;
+        }
+
+        #filtro-cidade:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
         .search-box input:focus {
@@ -297,11 +320,11 @@
         }
 
         .botao-maps {
-            background: var(--maps);
+            background: var(--primary);
         }
 
         .botao-maps:hover {
-            background: #d93025;
+            background: var(--primary-dark);
         }
 
         /* =========================
@@ -375,12 +398,88 @@
             background: rgba(0, 0, 0, 0.35);
         }
 
+        .install-notice {
+            position: fixed;
+            left: 50%;
+            bottom: max(16px, env(safe-area-inset-bottom));
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            width: min(620px, calc(100% - 32px));
+            padding: 18px 20px;
+            transform: translateX(-50%);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 14px;
+            background: var(--card);
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+
+        .install-notice[hidden] {
+            display: none;
+        }
+
+        .install-notice h2 {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .install-notice p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .install-notice-actions {
+            display: flex;
+            flex-shrink: 0;
+            gap: 8px;
+        }
+
+        .install-notice button {
+            min-height: 42px;
+            padding: 0 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .install-notice #instalar-app {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .install-notice #instalar-app:hover {
+            background: var(--primary-dark);
+        }
+
         @media (max-width: 767px) {
             .botao-dark {
                 top: 12px;
                 right: 12px;
                 width: 44px;
                 height: 44px;
+            }
+
+            .install-notice {
+                align-items: stretch;
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .install-notice-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
             }
         }
 
@@ -404,6 +503,10 @@
 
             main {
                 padding: 25px 15px 45px;
+            }
+
+            .search-container {
+                grid-template-columns: 1fr;
             }
 
             .fornecedores-grid {
@@ -437,6 +540,24 @@
         aria-label="Ativar modo escuro"
         title="Ativar modo escuro"
     >🌙</button>
+
+    <aside
+        id="aviso-instalacao"
+        class="install-notice"
+        role="dialog"
+        aria-labelledby="titulo-instalacao"
+        aria-describedby="descricao-instalacao"
+        hidden
+    >
+        <div>
+            <h2 id="titulo-instalacao">Instale o app no seu celular</h2>
+            <p id="descricao-instalacao">Adicione os fornecedores à sua tela inicial para acessar mais rápido.</p>
+        </div>
+        <div class="install-notice-actions">
+            <button id="instalar-app" type="button">Instalar app</button>
+            <button id="dispensar-instalacao" type="button">Agora não</button>
+        </div>
+    </aside>
 
     <!-- =========================
          CABEÇALHO
@@ -487,6 +608,10 @@
                 >
 
             </div>
+
+            <select id="filtro-cidade" aria-label="Filtrar por cidade">
+                <option value="">Todas as cidades</option>
+            </select>
 
         </section>
 
@@ -580,6 +705,7 @@
                 nome: "Bazar da Construção",
                 telefone: "13982035908",
                 telefoneFormatado: "(13) 98203-5908",
+                cidade: "São Vicente",
                 endereco: "Av. Dom Pedro II, 1073 - Conj. Res. Tancredo Neves, São Vicente"
             },
 
@@ -587,13 +713,15 @@
                 nome: "Correia Materiais",
                 telefone: "13974152919",
                 telefoneFormatado: "(13) 97415-2919",
-                endereco: "Avenida Principal, 500 - São Paulo - SP"
+                cidade: "São Vicente",
+                endereco: "Av. Augusto Severo, 45 - Parque Sao Vicente, São Vicente - SP"
             },
 
             {
                 nome: "Bela Tintas",
                 telefone: "5513974166404",
                 telefoneFormatado: "(11) 97777-7777",
+                cidade: "São Vicente",
                 endereco: "Av. Antônio Emmerich, 819 - Vila Cascatinha, São Vicente - SP"
             },
 
@@ -601,13 +729,15 @@
                 nome: "Adriex",
                 telefone: "5513974104504",
                 telefoneFormatado: "(13) 97410-4504",
-                endereco: "Av. Antônio Emmerich, 819 - Vila Cascatinha, São Vicente - SP"
+                cidade: "São Vicente",
+                endereco: "Av. Nações Unidas, 1196 - Vila Margarida, São Vicente - SP"
             },
 
             {
                 nome: "Andra Materiais Eletricos",
                 telefone: "5513997360060",
                 telefoneFormatado: "(13) 99736-0060",
+                cidade: "Santos",
                 endereco: "Av. Senador Feijó, 414 - Vila Mathias, Santos - SP"
             }
 
@@ -628,6 +758,11 @@
         const campoPesquisa =
             document.getElementById(
                 "campo-pesquisa"
+            );
+
+        const filtroCidade =
+            document.getElementById(
+                "filtro-cidade"
             );
 
         const totalFornecedores =
@@ -800,46 +935,34 @@
         ==========================================
         */
 
-        campoPesquisa.addEventListener(
-            "input",
-            function () {
+        function filtrarFornecedores() {
+            const termo = campoPesquisa.value.toLowerCase().trim();
+            const cidadeSelecionada = filtroCidade.value;
 
-                const termo =
-                    this.value
-                        .toLowerCase()
-                        .trim();
+            const resultados = fornecedores.filter(fornecedor => {
+                const correspondeBusca =
+                    fornecedor.nome.toLowerCase().includes(termo)
+                    || fornecedor.endereco.toLowerCase().includes(termo)
+                    || fornecedor.telefoneFormatado.toLowerCase().includes(termo);
 
+                return correspondeBusca
+                    && (!cidadeSelecionada || fornecedor.cidade === cidadeSelecionada);
+            });
 
-                const resultados =
-                    fornecedores.filter(
-                        fornecedor => {
+            exibirFornecedores(resultados);
+        }
 
-                            return (
-                                fornecedor.nome
-                                    .toLowerCase()
-                                    .includes(termo)
+        [...new Set(fornecedores.map(fornecedor => fornecedor.cidade))]
+            .sort((cidadeA, cidadeB) => cidadeA.localeCompare(cidadeB, "pt-BR"))
+            .forEach(cidade => {
+                const opcao = document.createElement("option");
+                opcao.value = cidade;
+                opcao.textContent = cidade;
+                filtroCidade.appendChild(opcao);
+            });
 
-                                ||
-
-                                fornecedor.endereco
-                                    .toLowerCase()
-                                    .includes(termo)
-
-                                ||
-
-                                fornecedor.telefoneFormatado
-                                    .toLowerCase()
-                                    .includes(termo)
-                            );
-
-                        }
-                    );
-
-
-                exibirFornecedores(resultados);
-
-            }
-        );
+        campoPesquisa.addEventListener("input", filtrarFornecedores);
+        filtroCidade.addEventListener("change", filtrarFornecedores);
 
 
         /*
@@ -883,6 +1006,72 @@
         */
 
         exibirFornecedores(fornecedores);
+
+        const avisoInstalacao = document.getElementById("aviso-instalacao");
+        const descricaoInstalacao = document.getElementById("descricao-instalacao");
+        const botaoInstalar = document.getElementById("instalar-app");
+        const botaoDispensar = document.getElementById("dispensar-instalacao");
+        const eIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+            || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+        const appInstalado = window.matchMedia("(display-mode: standalone)").matches
+            || navigator.standalone === true;
+        let promptInstalacao = null;
+
+        if (!appInstalado) {
+            avisoInstalacao.hidden = false;
+
+            if (eIOS) {
+                descricaoInstalacao.textContent =
+                    "No Safari, toque em Compartilhar e escolha Adicionar à Tela de Início.";
+                botaoInstalar.textContent = "Como instalar";
+            }
+        }
+
+        window.addEventListener("beforeinstallprompt", evento => {
+            evento.preventDefault();
+            promptInstalacao = evento;
+            descricaoInstalacao.textContent =
+                "Adicione os fornecedores à sua tela inicial para acessar mais rápido.";
+            botaoInstalar.hidden = false;
+            botaoInstalar.textContent = "Instalar app";
+        });
+
+        botaoInstalar.addEventListener("click", async () => {
+            if (!promptInstalacao) {
+                if (!eIOS) {
+                    descricaoInstalacao.textContent =
+                        "Abra o menu do navegador e escolha Instalar app ou Adicionar à tela inicial.";
+                }
+
+                botaoInstalar.hidden = true;
+                return;
+            }
+
+            const evento = promptInstalacao;
+            promptInstalacao = null;
+            await evento.prompt();
+
+            const escolha = await evento.userChoice;
+            if (escolha.outcome === "accepted") {
+                avisoInstalacao.hidden = true;
+            } else {
+                descricaoInstalacao.textContent =
+                    "Você pode instalar depois pelo menu do navegador.";
+                botaoInstalar.hidden = true;
+            }
+        });
+
+        botaoDispensar.addEventListener("click", () => {
+            avisoInstalacao.hidden = true;
+        });
+
+        window.addEventListener("appinstalled", () => {
+            avisoInstalacao.hidden = true;
+        });
+
+        if ("serviceWorker" in navigator && window.isSecureContext) {
+            navigator.serviceWorker.register("./service-worker.js");
+        }
 
     </script>
 
