@@ -1,4 +1,4 @@
-const CACHE_NAME = "fornecedores-ccb-v1";
+const CACHE_NAME = "fornecedores-ccb-v2";
 const APP_FILES = [
     "./",
     "./index.html",
